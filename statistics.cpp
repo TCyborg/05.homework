@@ -1,5 +1,6 @@
 #include <iostream>
 #include <limits>
+#include <cmath>
 
 class IStatistics {
 public:
@@ -12,6 +13,8 @@ public:
 
 class Min : public IStatistics {
 public:
+	Min(const Min&) = delete;
+	Min& operator=(const Min&) = delete;
 	Min() : m_min_{std::numeric_limits<double>::max()} {
 	}
 
@@ -35,7 +38,9 @@ private:
 
 class Max : public IStatistics {
 public:
-	Max() : m_max_{std::numeric_limits<double>::min()} {
+	Max(const Max&) = delete;
+	Max& operator=(const Max&) = delete;
+	Max() : m_max_{std::numeric_limits<double>::lowest()} {
 	}
 
 	void update(double next) override {
@@ -58,11 +63,13 @@ private:
 
 class Mean : public IStatistics {
 public:
+	Mean(const Mean&) = delete;
+	Mean& operator=(const Mean&) = delete;
 	Mean() : m_mean_{0.0}, m_cnt_{0} {
 	}
 
 	void update(double next) override {
-		m_cnt_ += (m_cnt_ < m_max_cnt) ? 1 : 0;
+		m_cnt_ += (m_cnt_ < WINDOW_SIZE) ? 1 : 0;
 		m_mean_ += (next - m_mean_) / m_cnt_;
 	}
 
@@ -75,7 +82,36 @@ public:
 	}
 
 private:
-	const unsigned int m_max_cnt = 10000;
+	static constexpr unsigned int WINDOW_SIZE = 16384;
+	double m_mean_;
+	unsigned int m_cnt_;
+};
+
+class Std : public IStatistics {
+public:
+	Std(const Std&) = delete;
+	Std& operator=(const Std&) = delete;
+	Std() : m_disp_{0.0}, m_mean_{0.0}, m_cnt_{0} {
+	}
+
+	void update(double next) override {
+		double delta = next - m_mean_;
+		m_cnt_ += (m_cnt_ < WINDOW_SIZE) ? 1 : 0;
+		m_mean_ += delta / m_cnt_;
+		m_disp_ += delta * (next - m_mean_); // delta2 вычисляется здесь
+	}
+
+	double eval() const override {
+		return (m_cnt_ > 1) ? std::sqrt(m_disp_ / m_cnt_) : 0.0;
+	}
+
+	const char * name() const override {
+		return "std";
+	}
+
+private:
+	static constexpr unsigned int WINDOW_SIZE = 16384;
+	double m_disp_;
 	double m_mean_;
 	unsigned int m_cnt_;
 };
