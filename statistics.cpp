@@ -56,18 +56,20 @@ private:
 	double m_max_;
 };
 
-class Avg : public IStatistics {
+class Mean : public IStatistics {
 public:
-	Avg() : m_avg_{0},	m_cnt_{0} {
+	Mean() : m_mean_{0.0}, m_cnt_{0} {
 	}
 
 	void update(double next) override {
-		m_avg_ = m_avg_ * ((double) m_cnt_ / (double) (m_cnt_ + 1)) + next / (double) (m_cnt_ + 1);
-		m_cnt_++; //TODO ADD overflow exception handler
+		m_mean_ = m_mean_ * ((double) m_cnt_ / (double) (m_cnt_ + 1)) + next / (double) (m_cnt_ + 1);
+		if (m_cnt_ < UINT_MAX){
+			m_cnt_++;
+		}
 	}
 
 	double eval() const override {
-		return m_avg_;
+		return (m_cnt_ > 0) ? m_mean_ : 0.0;
 	}
 
 	const char * name() const override {
@@ -75,7 +77,7 @@ public:
 	}
 
 private:
-	double m_avg_;
+	double m_mean_;
 	unsigned int m_cnt_;
 };
 
@@ -86,7 +88,7 @@ int main() {
 
 	statistics[0] = new Min{};
 	statistics[1] = new Max{};
-	statistics[2] = new Avg{};
+	statistics[2] = new Mean{};
 
 	double val = 0;
 	while (std::cin >> val) {
