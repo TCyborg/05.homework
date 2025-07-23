@@ -12,17 +12,17 @@ public:
 
 class Min : public IStatistics {
 public:
-	Min() : m_min{std::numeric_limits<double>::max()} {
+	Min() : m_min_{std::numeric_limits<double>::max()} {
 	}
 
 	void update(double next) override {
-		if (next < m_min) {
-			m_min = next;
+		if (next < m_min_) {
+			m_min_ = next;
 		}
 	}
 
 	double eval() const override {
-		return m_min;
+		return m_min_;
 	}
 
 	const char * name() const override {
@@ -30,15 +30,39 @@ public:
 	}
 
 private:
-	double m_min;
+	double m_min_;
+};
+
+class Max : public IStatistics {
+public:
+	Max() : m_max_{std::numeric_limits<double>::min()} {
+	}
+
+	void update(double next) override {
+		if (next > m_max_) {
+			m_max_ = next;
+		}
+	}
+
+	double eval() const override {
+		return m_max_;
+	}
+
+	const char * name() const override {
+		return "max";
+	}
+
+private:
+	double m_max_;
 };
 
 int main() {
 
-	const size_t statistics_count = 1;
+	const size_t statistics_count = 2;
 	IStatistics *statistics[statistics_count];
 
 	statistics[0] = new Min{};
+	statistics[1] = new Max{};
 
 	double val = 0;
 	while (std::cin >> val) {
