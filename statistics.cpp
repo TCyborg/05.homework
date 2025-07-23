@@ -62,10 +62,8 @@ public:
 	}
 
 	void update(double next) override {
-		m_mean_ = m_mean_ * ((double) m_cnt_ / (double) (m_cnt_ + 1)) + next / (double) (m_cnt_ + 1);
-		if (m_cnt_ < UINT_MAX){
-			m_cnt_++;
-		}
+		m_cnt_ += (m_cnt_ < m_max_cnt) ? 1 : 0;
+		m_mean_ += (next - m_mean_) / m_cnt_;
 	}
 
 	double eval() const override {
@@ -77,18 +75,21 @@ public:
 	}
 
 private:
+	const unsigned int m_max_cnt = 10000;
 	double m_mean_;
 	unsigned int m_cnt_;
 };
 
+
 int main() {
 
-	const size_t statistics_count = 3;
+	const size_t statistics_count = 4;
 	IStatistics *statistics[statistics_count];
 
 	statistics[0] = new Min{};
 	statistics[1] = new Max{};
 	statistics[2] = new Mean{};
+	statistics[3] = new Std{};
 
 	double val = 0;
 	while (std::cin >> val) {
